@@ -23,6 +23,8 @@ Usage:
 * "log": outputs basic information to System.out on each request
 * "cacheTTL": time in seconds - time in seconds for validity of the resource in client cache. This setups "Cache-Control" on HTTP response headers
 * "http-status": http status code - http status code to be returned on the response for the request
+* "msgbytes": message size(byte)
+* "msgcount": message count
 
 Examples:
 * http://localhost:8080/web-stress-simulator-1.0.0/cpu?time=1000 - causes a request to last one second. During that time it will try to use 100% of a CPU core.
@@ -34,6 +36,7 @@ Examples:
 * http://localhost:8080/web-stress-simulator-1.0.0/output?mbytes=1&time=10000 - the same as above, but now it will generate 1MB of data with a data rate of 100KB/s so that it will last 60 seconds to output the whole data. It's usefull to test network appliances under slow connections conditions
     * 这里`mbytes`转换为`KB`后必须小于`time`(毫秒)
 * http://localhost:8080/web-stress-simulator-1.0.0/delay?time=3000&random=true&http-status=500 - causes a request with random duration (0-3s) to return a response indicating an internal error
+* http://localhost:8080/web-stress-simulator-1.0.0/mq?msgbytes=1000&msgcount=10 - send 10 message, every message 1000 byte
 
 Tips:
 * Use JMeter in order to simulate various different workloads on your web infrastructure by varying the URL parameters as above
