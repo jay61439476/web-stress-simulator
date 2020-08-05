@@ -1,9 +1,6 @@
 package br.stutz.tools.websimulator;
 
-import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
@@ -194,7 +191,7 @@ public class WebSimulatorServlet extends HttpServlet {
 
         } else {
             finishTest(request, response, (System.currentTimeMillis() - now), 400, "error", 0,
-                    "Use GET '/cpu', '/mem', '/delay', '/output', '/write' or POST '/input' with parameters 'time' [time in milliseconds], 'mbytes' [number of mbytes], 'cacheSeconds' [cache TTL in seconds], 'log' [true to sysout] and/or 'random' [true or false for randomizing time and mbytes]. Ex.: http://localhost:8080/web-simulator/mem?mbytes=1&time=1000 - will allocate 1M and delay the request for 1s", isLog);
+                    "Use GET '/cpu', '/mem', '/delay', '/output', '/write', '/mq' or POST '/input' with parameters 'time' [time in milliseconds], 'mbytes' [number of mbytes], 'msgbytes' [message size(byte)], 'msgcount' [message count], 'cacheSeconds' [cache TTL in seconds], 'log' [true to sysout] and/or 'random' [true or false for randomizing time and mbytes]. Ex.: http://localhost:8080/web-simulator/mem?mbytes=1&time=1000 - will allocate 1M and delay the request for 1s", isLog);
         }
 
     }
@@ -313,6 +310,7 @@ public class WebSimulatorServlet extends HttpServlet {
         channel.queueDeclare(queueName, true, false, false, null);
         channel.queueBind(queueName, exchangeName, routingKey);
 
+        // put msg
         for (int i = 0; i < msgCount; i++) {
             byte[] msg = new byte[msgBytes];
             random.nextBytes(msg);
@@ -321,6 +319,32 @@ public class WebSimulatorServlet extends HttpServlet {
                             .expiration("60000")
                             .build(),
                     msg);
+        }
+
+        //get msg
+        boolean autoAck = false;
+        for (int i = 0; i < msgCount / 2; i++) {
+            GetResponse response = channel.basicGet(queueName, autoAck);
+            if (response == null) {
+                // No message retrieved.
+            } else {
+//                AMQP.BasicProperties props = response.getProps();
+                byte[] body = response.getBody();
+                long deliveryTag = response.getEnvelope().getDeliveryTag();
+
+                String fileName = "/tmp/" + deliveryTag + ".msg";
+                RandomAccessFile raf = null;
+                try {
+                    raf = new RandomAccessFile(fileName, "rw");
+                    raf.write(body);
+                } finally {
+                    if (raf != null) {
+                        raf.close();
+                    }
+                }
+
+                channel.basicAck(deliveryTag, false); // acknowledge receipt of the message
+            }
         }
 
         channel.close();

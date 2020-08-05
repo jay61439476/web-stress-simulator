@@ -15,6 +15,8 @@ Usage:
 * "mem": allocate "mbytes" on an internal array and wait for "time" milliseconds before releasing resources then return request info. A new array is allocated and filled with random values on each request.
 * "delay": delay request for "time" milliseconds than return request info. This is based on Thread.sleep(time);
 * "output": generates "mbytes" of text data as response. Mime type is "text/plain".
+* "write": generates "mbytes" of text file, save to /tmp/*.tmp
+* "mq": send message to rabbit, then get half save to text file in /tmp/*.msg
 
 [parameters] may be:
 * "time": time in milliseconds - minimum time of the request
@@ -36,7 +38,7 @@ Examples:
 * http://localhost:8080/web-stress-simulator-1.0.0/output?mbytes=1&time=10000 - the same as above, but now it will generate 1MB of data with a data rate of 100KB/s so that it will last 60 seconds to output the whole data. It's usefull to test network appliances under slow connections conditions
     * 这里`mbytes`转换为`KB`后必须小于`time`(毫秒)
 * http://localhost:8080/web-stress-simulator-1.0.0/delay?time=3000&random=true&http-status=500 - causes a request with random duration (0-3s) to return a response indicating an internal error
-* http://localhost:8080/web-stress-simulator-1.0.0/mq?msgbytes=1000&msgcount=10 - send 10 message, every message 1000 byte
+* http://192.168.0.170/web-stress-simulator-1.0.0/mq?msgbytes=1000&msgcount=10 - send 10 message, every message 1000 byte
 
 Tips:
 * Use JMeter in order to simulate various different workloads on your web infrastructure by varying the URL parameters as above
