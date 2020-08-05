@@ -29,6 +29,7 @@ Examples:
 * http://localhost:8080/web-stress-simulator-1.0.0/mem?mbytes=10&time=5000 - causes a request to last five seconds. During that time 10MB of memory will be allocated
 * http://localhost:8080/web-stress-simulator-1.0.0/delay?time=30000 - causes a request to last 30 seconds. During that time no CPU resources are spent, simulating slow or hung backend calls
 * http://localhost:8080/web-stress-simulator-1.0.0/delay?time=3000&random=true - causes a request to last, randomically, from 0 to 3 seconds
+* http://localhost:8080/web-stress-simulator-1.0.0/write?mbytes=3 - write 3MB tmp file in /tmp 
 * http://localhost:8080/web-stress-simulator-1.0.0/output?mbytes=3 - causes 3MB of random text data to be returned from the server
 * http://localhost:8080/web-stress-simulator-1.0.0/output?mbytes=1&time=10000 - the same as above, but now it will generate 1MB of data with a data rate of 100KB/s so that it will last 60 seconds to output the whole data. It's usefull to test network appliances under slow connections conditions
     * 这里`mbytes`转换为`KB`后必须小于`time`(毫秒)

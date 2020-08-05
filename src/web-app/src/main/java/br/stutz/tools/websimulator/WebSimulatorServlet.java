@@ -1,20 +1,16 @@
 package br.stutz.tools.websimulator;
 
-import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.Locale;
-import java.util.Random;
-import java.util.TimeZone;
-
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * Servlet implementation class WebSimulatorServlet
@@ -23,7 +19,7 @@ public class WebSimulatorServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private Random random = new Random();
 	private DateFormat httpDateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
-	
+
 	public WebSimulatorServlet() {
 		httpDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 	}
@@ -62,11 +58,11 @@ public class WebSimulatorServlet extends HttpServlet {
 		int nbytes = mbytes * 1000000;
 
 		if (request.getRequestURI().endsWith("/cpu")) {
-			
+
 			if((time==0 && count==0) || (time!=0 && count!=0)) {
-				finishTest(request, response, (System.currentTimeMillis() - now), 400, "error", 0, 
+				finishTest(request, response, (System.currentTimeMillis() - now), 400, "error", 0,
 					"Use GET '/cpu' with either 'time' or 'count' parameter. 'time' for consuming 100% cpu for that time, 'count' for counting from 0 up to cout. Ex.: http://localhost:8080/web-stress-simulator/cpu?count=10000 - will count from 0 to 10000", isLog);
-			
+
 			} else if(time>0) {
 				double value = 9.9;
 				while (System.currentTimeMillis() <= (now + time)) {
@@ -112,6 +108,31 @@ public class WebSimulatorServlet extends HttpServlet {
 			}
 			finishTest(request, response, (System.currentTimeMillis() - now), httpStatus, "success", cacheTTL, null, isLog);
 
+		} else if (request.getRequestURI().endsWith("/write")) {
+			String fileName = "/tmp/" + System.currentTimeMillis() + ".tmp";
+			RandomAccessFile raf = null;
+			try {
+				raf = new RandomAccessFile(fileName, "rw");
+				for (int i = 0; i < nbytes; i++) {
+					raf.write((char) (32 + (i % 94)));
+				}
+				if(isLog) {
+					System.out.println("create:" + fileName);
+				}
+			} catch (IOException e) {
+				throw e;
+//				System.out.println(e.getMessage());
+			} finally {
+				if (raf != null) {
+					try {
+						raf.close();
+					} catch (Exception e2) {
+						System.out.println(e2.getMessage());
+					}
+				}
+			}
+
+			finishTest(request, response, (System.currentTimeMillis() - now), httpStatus, "success", cacheTTL, null, isLog);
 		} else if (request.getRequestURI().endsWith("/output")) {
 			// generate random content to the outputstream
 			long timeElapsed = System.currentTimeMillis() - now;
@@ -138,7 +159,7 @@ public class WebSimulatorServlet extends HttpServlet {
 			if(time>0) {
 				timeBetweenBytes = 1 / ((double) nbytes / (double) time);
 			}
-			
+
 			ServletOutputStream responseOS = response.getOutputStream();
 			for (int i = 0; i < nbytes; i++) {
 				responseOS.print((char) (32 + (i % 94)));
@@ -154,8 +175,8 @@ public class WebSimulatorServlet extends HttpServlet {
 			}
 
 		} else {
-			finishTest(request, response, (System.currentTimeMillis() - now), 400, "error", 0, 
-					"Use GET '/cpu', '/mem', '/delay', '/output' or POST '/input' with parameters 'time' [time in milliseconds], 'mbytes' [number of mbytes], 'cacheSeconds' [cache TTL in seconds], 'log' [true to sysout] and/or 'random' [true or false for randomizing time and mbytes]. Ex.: http://localhost:8080/web-simulator/mem?mbytes=1&time=1000 - will allocate 1M and delay the request for 1s", isLog);
+			finishTest(request, response, (System.currentTimeMillis() - now), 400, "error", 0,
+					"Use GET '/cpu', '/mem', '/delay', '/output', '/write' or POST '/input' with parameters 'time' [time in milliseconds], 'mbytes' [number of mbytes], 'cacheSeconds' [cache TTL in seconds], 'log' [true to sysout] and/or 'random' [true or false for randomizing time and mbytes]. Ex.: http://localhost:8080/web-simulator/mem?mbytes=1&time=1000 - will allocate 1M and delay the request for 1s", isLog);
 		}
 
 	}
