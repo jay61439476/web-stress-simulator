@@ -36,7 +36,7 @@ public class WebSimulatorServlet extends HttpServlet {
 		long now = System.currentTimeMillis();
 
 		String timeStr = request.getParameter("time");
-		String nbytesStr = request.getParameter("nbytes");
+		String mbytesStr = request.getParameter("mbytes");
 		String countStr = request.getParameter("count");
 		String randomStr = request.getParameter("random");
 		String cacheTTLStr = request.getParameter("cacheTTL");
@@ -44,7 +44,7 @@ public class WebSimulatorServlet extends HttpServlet {
 		String httpStatusStr = request.getParameter("http-status");
 
 		int httpStatus = (httpStatusStr!=null?Integer.parseInt(httpStatusStr):200);
-		int maxNbytes = (nbytesStr != null ? Integer.parseInt(nbytesStr) : 5000);
+		int maxMbytes = (mbytesStr != null ? Integer.parseInt(mbytesStr) : 5000);
 		long count = (countStr != null ? Long.parseLong(countStr) : 0L);
 		long maxTime = (timeStr != null ? Long.parseLong(timeStr) : 0L);
 		int cacheTTL = (cacheTTLStr != null ? Integer.parseInt(cacheTTLStr) : 0);
@@ -52,12 +52,14 @@ public class WebSimulatorServlet extends HttpServlet {
 		boolean isLog = "true".equals(logStr);
 
 		long time = maxTime;
-		int nbytes = maxNbytes;
+		int mbytes = maxMbytes;
 
 		if (isRandom) {
 			time = 1 + (long) (random.nextDouble() * (double) maxTime);
-			nbytes = 1 + (int) (random.nextDouble() * (double) maxNbytes);
+			mbytes = 1 + (int) (random.nextDouble() * (double) maxMbytes);
 		}
+
+		int nbytes = mbytes * 1000000;
 
 		if (request.getRequestURI().endsWith("/cpu")) {
 			
@@ -89,7 +91,7 @@ public class WebSimulatorServlet extends HttpServlet {
 				finishTest(request, response, (System.currentTimeMillis() - now), httpStatus, "success", cacheTTL, "value=" + value, isLog);
 			}
 
-		} else if (request.getRequestURI().endsWith("/memory")) {
+		} else if (request.getRequestURI().endsWith("/mem")) {
 			byte[] b = new byte[nbytes];
 			random.nextBytes(b);
 			try {
@@ -97,7 +99,7 @@ public class WebSimulatorServlet extends HttpServlet {
 			} catch (InterruptedException e) {
 				throw new RuntimeException(e);
 			}
-			finishTest(request, response, (System.currentTimeMillis() - now), httpStatus, "success", cacheTTL, "membytes=" + b.length, isLog);
+			finishTest(request, response, (System.currentTimeMillis() - now), httpStatus, "success", cacheTTL, "mem=" + b.length / 1000000 + "MB", isLog);
 
 		} else if (request.getRequestURI().endsWith("/delay")) {
 			if (time == 0) {
@@ -153,7 +155,7 @@ public class WebSimulatorServlet extends HttpServlet {
 
 		} else {
 			finishTest(request, response, (System.currentTimeMillis() - now), 400, "error", 0, 
-					"Use GET '/cpu', '/memory', '/delay', '/output' or POST '/input' with parameters 'time' [time in milliseconds], 'nbytes' [number of bytes], 'cacheSeconds' [cache TTL in seconds], 'log' [true to sysout] and/or 'random' [true or false for randomizing time and nbytes]. Ex.: http://localhost:8080/web-simulator/memory?nbytes=1000000&time=1000 - will allocate 1M and delay the request for 1s", isLog);
+					"Use GET '/cpu', '/mem', '/delay', '/output' or POST '/input' with parameters 'time' [time in milliseconds], 'mbytes' [number of mbytes], 'cacheSeconds' [cache TTL in seconds], 'log' [true to sysout] and/or 'random' [true or false for randomizing time and mbytes]. Ex.: http://localhost:8080/web-simulator/mem?mbytes=1&time=1000 - will allocate 1M and delay the request for 1s", isLog);
 		}
 
 	}
