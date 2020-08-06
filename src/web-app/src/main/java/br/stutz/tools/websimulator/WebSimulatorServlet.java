@@ -8,6 +8,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.text.DateFormat;
@@ -118,25 +119,13 @@ public class WebSimulatorServlet extends HttpServlet {
 
         } else if (request.getRequestURI().endsWith("/write")) {
             String fileName = "/tmp/" + System.currentTimeMillis() + ".tmp";
-            RandomAccessFile raf = null;
-            try {
-                raf = new RandomAccessFile(fileName, "rw");
-                for (int i = 0; i < nbytes; i++) {
-                    raf.write((char) (32 + (i % 94)));
-                }
-                if (isLog) {
-                    System.out.println("create:" + fileName);
-                }
-            } catch (IOException e) {
-                throw e;
-            } finally {
-                if (raf != null) {
-                    try {
-                        raf.close();
-                    } catch (Exception e2) {
-                        System.out.println(e2.getMessage());
-                    }
-                }
+            FileOutputStream fos = new FileOutputStream(fileName);
+            byte[] array = new byte[nbytes];
+            new Random().nextBytes(array);
+            fos.write(array);
+            fos.close();
+            if (isLog) {
+                System.out.println("create:" + fileName);
             }
 
             finishTest(request, response, (System.currentTimeMillis() - now), httpStatus, "success", cacheTTL, null, isLog);
