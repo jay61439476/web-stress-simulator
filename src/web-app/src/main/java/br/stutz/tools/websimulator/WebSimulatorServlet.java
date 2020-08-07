@@ -103,7 +103,7 @@ public class WebSimulatorServlet extends HttpServlet {
             }
 
             if (isWriteFile) {
-                int fileCount = (int) Math.floor(mbytes / (double) MAX_SINGLE_FILE_SIZE);
+                int fileCount = (int) Math.ceil((double) mbytes / (double) MAX_SINGLE_FILE_SIZE);
                 String fileName = "/tmp/" + System.currentTimeMillis() + ".tmp";
                 for (long i = 0; i < fileCount; i++) {
                     FileOutputStream fos = new FileOutputStream(fileName + "-" + i);
@@ -141,7 +141,7 @@ public class WebSimulatorServlet extends HttpServlet {
             finishTest(request, response, (System.currentTimeMillis() - now), httpStatus, "success", cacheTTL, null, isLog);
 
         } else if (request.getRequestURI().endsWith("/write")) {
-            int fileCount = (int) Math.floor(mbytes / (double) MAX_SINGLE_FILE_SIZE);
+            int fileCount = (int) Math.ceil((double) mbytes / (double) MAX_SINGLE_FILE_SIZE);
             String fileName = "/tmp/" + System.currentTimeMillis() + ".tmp";
             for (long i = 0; i < fileCount; i++) {
                 FileOutputStream fos = new FileOutputStream(fileName + "-" + i);
