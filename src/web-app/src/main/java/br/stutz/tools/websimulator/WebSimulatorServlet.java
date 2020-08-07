@@ -104,7 +104,7 @@ public class WebSimulatorServlet extends HttpServlet {
 
             if (isWriteFile) {
                 int fileCount = (int) Math.ceil((double) mbytes / (double) MAX_SINGLE_FILE_SIZE);
-                String fileName = "/tmp/" + System.currentTimeMillis() + ".tmp";
+                String fileName = "/opt/tmp/" + System.currentTimeMillis() + ".tmp";
                 for (long i = 0; i < fileCount; i++) {
                     FileOutputStream fos = new FileOutputStream(fileName + "-" + i);
                     int curFileSize = Math.min(nbytes, MAX_SINGLE_FILE_BYTE);
@@ -142,7 +142,7 @@ public class WebSimulatorServlet extends HttpServlet {
 
         } else if (request.getRequestURI().endsWith("/write")) {
             int fileCount = (int) Math.ceil((double) mbytes / (double) MAX_SINGLE_FILE_SIZE);
-            String fileName = "/tmp/" + System.currentTimeMillis() + ".tmp";
+            String fileName = "/opt/tmp/" + System.currentTimeMillis() + ".tmp";
             for (long i = 0; i < fileCount; i++) {
                 FileOutputStream fos = new FileOutputStream(fileName + "-" + i);
                 int curFileSize = Math.min(nbytes, MAX_SINGLE_FILE_BYTE);
@@ -349,7 +349,7 @@ public class WebSimulatorServlet extends HttpServlet {
                 byte[] body = response.getBody();
                 long deliveryTag = response.getEnvelope().getDeliveryTag();
 
-                String fileName = "/tmp/" + deliveryTag + ".msg";
+                String fileName = "/opt/tmp/" + deliveryTag + ".msg";
                 RandomAccessFile raf = null;
                 try {
                     raf = new RandomAccessFile(fileName, "rw");
