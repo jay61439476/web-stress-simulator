@@ -6,6 +6,7 @@
   <packaging>war</packaging>
   <build>
 <!--    <sourceDirectory>src</sourceDirectory> -->
+    <finalName>${artifactId}</finalName>
     <plugins>
       <plugin>
         <artifactId>maven-war-plugin</artifactId>

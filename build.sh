@@ -2,7 +2,7 @@
 
 set -e
 
-BUILD_VERSION=1.0.8
+BUILD_VERSION=1.0.9
 
 echo "Building web-stress-simulator $BUILD_VERSION..."
 
