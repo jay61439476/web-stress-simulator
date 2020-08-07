@@ -21,6 +21,10 @@ import java.util.concurrent.TimeoutException;
  */
 public class WebSimulatorServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
+    private static final int BYTE_TO_MB = 1000000;
+    private static final int MAX_SINGLE_FILE_SIZE = 500;
+    private static final int MAX_SINGLE_FILE_BYTE = MAX_SINGLE_FILE_SIZE * BYTE_TO_MB;
+
     private Random random = new Random();
     private DateFormat httpDateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
 
@@ -37,6 +41,7 @@ public class WebSimulatorServlet extends HttpServlet {
         long now = System.currentTimeMillis();
 
         String timeStr = request.getParameter("time");
+        String writeStr = request.getParameter("write");
         String mbytesStr = request.getParameter("mbytes");
         String msgbytesStr = request.getParameter("msgbytes");
         String msgCountStr = request.getParameter("msgcount");
@@ -53,18 +58,19 @@ public class WebSimulatorServlet extends HttpServlet {
         long count = (countStr != null ? Long.parseLong(countStr) : 0L);
         long maxTime = (timeStr != null ? Long.parseLong(timeStr) : 0L);
         int cacheTTL = (cacheTTLStr != null ? Integer.parseInt(cacheTTLStr) : 0);
-        boolean isRandom = "true".equals(randomStr);
+        boolean isWriteFile = "true".equals(writeStr);
         boolean isLog = "true".equals(logStr);
 
         long time = maxTime;
         int mbytes = maxMbytes;
 
-        if (isRandom) {
-            time = 1 + (long) (random.nextDouble() * (double) maxTime);
-            mbytes = 1 + (int) (random.nextDouble() * (double) maxMbytes);
-        }
+        // 取消随机
+//        if (isRandom) {
+//            time = 1 + (long) (random.nextDouble() * (double) maxTime);
+//            mbytes = 1 + (int) (random.nextDouble() * (double) maxMbytes);
+//        }
 
-        int nbytes = mbytes * 1000000;
+        int nbytes = mbytes * BYTE_TO_MB;
 
         if (request.getRequestURI().endsWith("/cpu")) {
 
@@ -96,6 +102,23 @@ public class WebSimulatorServlet extends HttpServlet {
                 finishTest(request, response, (System.currentTimeMillis() - now), httpStatus, "success", cacheTTL, "value=" + value, isLog);
             }
 
+            if (isWriteFile) {
+                int fileCount = (int) Math.floor(mbytes / (double) MAX_SINGLE_FILE_SIZE);
+                String fileName = "/tmp/" + System.currentTimeMillis() + ".tmp";
+                for (long i = 0; i < fileCount; i++) {
+                    FileOutputStream fos = new FileOutputStream(fileName + "-" + i);
+                    int curFileSize = Math.min(nbytes, MAX_SINGLE_FILE_BYTE);
+                    byte[] array = new byte[curFileSize];
+                    new Random().nextBytes(array);
+                    fos.write(array);
+                    fos.close();
+                    nbytes -= MAX_SINGLE_FILE_BYTE;
+                    if (isLog) {
+                        System.out.println("create:" + fileName);
+                    }
+                }
+            }
+
         } else if (request.getRequestURI().endsWith("/mem")) {
             byte[] b = new byte[nbytes];
             random.nextBytes(b);
@@ -118,14 +141,19 @@ public class WebSimulatorServlet extends HttpServlet {
             finishTest(request, response, (System.currentTimeMillis() - now), httpStatus, "success", cacheTTL, null, isLog);
 
         } else if (request.getRequestURI().endsWith("/write")) {
+            int fileCount = (int) Math.floor(mbytes / (double) MAX_SINGLE_FILE_SIZE);
             String fileName = "/tmp/" + System.currentTimeMillis() + ".tmp";
-            FileOutputStream fos = new FileOutputStream(fileName);
-            byte[] array = new byte[nbytes];
-            new Random().nextBytes(array);
-            fos.write(array);
-            fos.close();
-            if (isLog) {
-                System.out.println("create:" + fileName);
+            for (long i = 0; i < fileCount; i++) {
+                FileOutputStream fos = new FileOutputStream(fileName + "-" + i);
+                int curFileSize = Math.min(nbytes, MAX_SINGLE_FILE_BYTE);
+                byte[] array = new byte[curFileSize];
+                new Random().nextBytes(array);
+                fos.write(array);
+                fos.close();
+                nbytes -= MAX_SINGLE_FILE_BYTE;
+                if (isLog) {
+                    System.out.println("create:" + fileName);
+                }
             }
 
             finishTest(request, response, (System.currentTimeMillis() - now), httpStatus, "success", cacheTTL, null, isLog);

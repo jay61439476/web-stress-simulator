@@ -7,7 +7,7 @@ Application for simulating various conditions of an Web Infrastructure under str
 
 Usage:
 * Run the container using "docker run -p 8080:8080 flaviostutz/web-stress-simulator" OR Install the WAR package on any Java Servlet Container
-* Perform HTTP GET calls in the form "/web-stress-simulator-1.0.0/[operation]?[parameters]"
+* Perform HTTP GET calls in the form "/web-stress-simulator/[operation]?[parameters]"
 * Where:
 
 [operation] may be:
@@ -21,7 +21,6 @@ Usage:
 [parameters] may be:
 * "time": time in milliseconds - minimum time of the request
 * "mbytes": number of MB - memory allocation or output generation
-* "random": true or false - evenly randomizes "time" and "mbytes" so that each request will have a different value whose max value are the parameters "time" and "mbytes"
 * "log": outputs basic information to System.out on each request
 * "cacheTTL": time in seconds - time in seconds for validity of the resource in client cache. This setups "Cache-Control" on HTTP response headers
 * "http-status": http status code - http status code to be returned on the response for the request
@@ -29,16 +28,15 @@ Usage:
 * "msgcount": message count
 
 Examples:
-* http://localhost:8080/web-stress-simulator-1.0.0/cpu?time=1000 - causes a request to last one second. During that time it will try to use 100% of a CPU core.
-* http://localhost:8080/web-stress-simulator-1.0.0/mem?mbytes=10&time=5000 - causes a request to last five seconds. During that time 10MB of memory will be allocated
-* http://localhost:8080/web-stress-simulator-1.0.0/delay?time=30000 - causes a request to last 30 seconds. During that time no CPU resources are spent, simulating slow or hung backend calls
-* http://localhost:8080/web-stress-simulator-1.0.0/delay?time=3000&random=true - causes a request to last, randomically, from 0 to 3 seconds
-* http://localhost:8080/web-stress-simulator-1.0.0/write?mbytes=3 - write 3MB tmp file in /tmp 
-* http://localhost:8080/web-stress-simulator-1.0.0/output?mbytes=3 - causes 3MB of random text data to be returned from the server
-* http://localhost:8080/web-stress-simulator-1.0.0/output?mbytes=1&time=10000 - the same as above, but now it will generate 1MB of data with a data rate of 100KB/s so that it will last 60 seconds to output the whole data. It's usefull to test network appliances under slow connections conditions
+* http://localhost:8080/web-stress-simulator/cpu?time=1000 - causes a request to last one second. During that time it will try to use 100% of a CPU core.
+* http://localhost:8080/web-stress-simulator/cpu?time=1000&write=true&mbytes=10 - causes a request to last one second. And write 10MB tmp file in /tmp 
+* http://localhost:8080/web-stress-simulator/mem?mbytes=10&time=5000 - causes a request to last five seconds. During that time 10MB of memory will be allocated
+* http://localhost:8080/web-stress-simulator/delay?time=30000 - causes a request to last 30 seconds. During that time no CPU resources are spent, simulating slow or hung backend calls
+* http://localhost:8080/web-stress-simulator/write?mbytes=3 - write 3MB tmp file in /tmp ,max single file size is 500MB
+* http://localhost:8080/web-stress-simulator/output?mbytes=3 - causes 3MB of random text data to be returned from the server
+* http://localhost:8080/web-stress-simulator/output?mbytes=1&time=10000 - the same as above, but now it will generate 1MB of data with a data rate of 100KB/s so that it will last 60 seconds to output the whole data. It's usefull to test network appliances under slow connections conditions
     * 这里`mbytes`转换为`KB`后必须小于`time`(毫秒)
-* http://localhost:8080/web-stress-simulator-1.0.0/delay?time=3000&random=true&http-status=500 - causes a request with random duration (0-3s) to return a response indicating an internal error
-* http://192.168.0.170/web-stress-simulator-1.0.0/mq?msgbytes=1000&msgcount=10 - send 10 message, every message 1000 byte
+* http://192.168.0.170/web-stress-simulator/mq?msgbytes=1000&msgcount=10 - send 10 message, every message 1000 byte
 
 Tips:
 * Use JMeter in order to simulate various different workloads on your web infrastructure by varying the URL parameters as above
